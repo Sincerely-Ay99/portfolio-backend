@@ -20,6 +20,10 @@ EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
 
+@app.route("/api/ping", methods=["GET", "POST"])
+def ping():
+    return jsonify({"ok": True})
+
 
 @app.route("/api/contact", methods=["POST"])
 def contact():
