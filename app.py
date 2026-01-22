@@ -14,7 +14,6 @@ CORS(
     supports_credentials=False
 )
 
-
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
 EMAIL_USER = os.getenv("EMAIL_USER")
@@ -42,7 +41,7 @@ def contact():
     )
 
     try:
-        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT, timeout=10) as server:
             server.starttls()
             server.login(EMAIL_USER, EMAIL_PASS)
             server.send_message(msg)
