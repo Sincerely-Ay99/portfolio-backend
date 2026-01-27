@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import smtplib
-from email.message import EmailMessage
 import os
 from dotenv import load_dotenv
+import resend
 
 load_dotenv()
+
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 app = Flask(__name__)
 CORS(
@@ -14,11 +15,9 @@ CORS(
     supports_credentials=False
 )
 
-EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USER = os.getenv("EMAIL_USER")
-EMAIL_PASS = os.getenv("EMAIL_PASS")
 RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+
 
 @app.route("/api/ping", methods=["GET", "POST"])
 def ping():
@@ -36,20 +35,13 @@ def contact():
     if not name or not email or not message:
         return jsonify({"error": "All fields are required"}), 400
 
-    msg = EmailMessage()
-    msg["Subject"] = "New Portfolio Contact Message"
-    msg["From"] = EMAIL_USER
-    msg["To"] = RECEIVER_EMAIL
-    msg.set_content(
-        f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
-    )
-
     try:
-        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT, timeout=10) as server:
-            server.starttls()
-            server.login(EMAIL_USER, EMAIL_PASS)
-            server.send_message(msg)
-
+        resend.Emails.send({
+            "from": SENDER_EMAIL,
+            "to": RECEIVER_EMAIL,
+            "subject": "New Portfolio Contact Message",
+            "text": f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+        })
         return jsonify({"success": True})
 
     except Exception as e:
